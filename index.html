@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bayron Social — O Futuro</title>
+  <!-- Tailwind CSS Grounded -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    body { background-color: #f0f2f5; font-family: sans-serif; }
+    .fb-shadow { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
+    .hidden { display: none; }
+    .pfp-circle { background-color: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; border-radius: 9999px; overflow: hidden; }
+  </style>
+</head>
+<body>
+
+  <!-- TELA DE LOGIN / REGISTRO -->
+  <div id="auth-page" class="min-h-screen flex flex-col lg:flex-row items-center justify-center p-6 gap-10 lg:gap-40">
+    <div class="max-w-md text-center lg:text-left">
+      <h1 class="text-7xl font-extrabold text-blue-600 mb-4 tracking-tighter">Bayron</h1>
+      <p class="text-2xl font-medium text-gray-800">Conecte-se e compartilhe sua vida com o mundo de forma profissional e gratuita.</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm">
+      <input type="email" id="email" placeholder="E-mail" class="w-full p-3 mb-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-lg">
+      <input type="password" id="password" placeholder="Senha" class="w-full p-3 mb-4 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-lg">
+      <button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg text-xl hover:bg-blue-700 transition">Entrar</button>
+      <hr class="my-6">
+      <button onclick="registrar()" class="w-full bg-green-500 text-white font-bold py-3 rounded-lg text-lg hover:bg-green-600 transition">Criar conta gratuita</button>
+    </div>
+  </div>
+
+  <!-- APP PRINCIPAL -->
+  <div id="app-page" class="hidden">
+    <nav class="bg-white h-14 flex items-center justify-between px-4 sticky top-0 z-50 fb-shadow">
+      <div class="flex items-center gap-2">
+        <div class="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center text-2xl font-black">B</div>
+        <div class="bg-gray-100 rounded-full px-4 py-2 text-gray-500 text-sm hidden md:block">🔍 Pesquisar no Bayron</div>
+      </div>
+      <div class="flex gap-10 text-2xl">
+        <button class="text-blue-600 border-b-4 border-blue-600 pb-1 px-4">🏠</button>
+        <button class="text-gray-500 hover:bg-gray-100 p-2 rounded-lg transition px-4">📺</button>
+        <button class="text-gray-500 hover:bg-gray-100 p-2 rounded-lg transition px-4">🛒</button>
+      </div>
+      <button onclick="logout()" class="bg-gray-200 px-4 py-2 rounded-lg font-bold hover:bg-gray-300">Sair</button>
+    </nav>
+
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 p-4">
+      <!-- Sidebar / Perfil individual -->
+      <aside class="space-y-4">
+        <div class="bg-white rounded-xl p-6 fb-shadow text-center">
+          <div class="relative inline-block">
+            <div id="main-pfp" class="w-24 h-24 mx-auto border-4 border-white shadow-md pfp-circle text-4xl">?</div>
+            <label class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 shadow border-2 border-white">
+              📷 <input type="file" id="change-pfp" class="hidden" accept="image/*" onchange="uploadProfilePic(this)">
+            </label>
+          </div>
+          <h2 id="user-name" class="font-bold mt-4 text-xl">Usuário</h2>
+          <p class="text-xs text-gray-500">Mude sua foto clicando na câmera</p>
+        </div>
+      </aside>
+
+      <!-- Feed Central -->
+      <main class="lg:col-span-2 space-y-4">
+        <div class="bg-white rounded-xl p-4 fb-shadow">
+          <div class="flex gap-3 mb-4">
+            <div id="small-pfp" class="w-10 h-10 pfp-circle text-xl shrink-0">?</div>
+            <input type="text" id="post-text" placeholder="No que você está pensando?" class="bg-gray-100 rounded-full flex-1 px-4 outline-none hover:bg-gray-200">
+          </div>
+          <hr class="mb-4">
+          <div class="flex justify-between items-center">
+            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded-lg font-bold text-gray-600 transition">
+              <span class="text-green-500 text-2xl">🖼️</span>
+              <span>Foto do Post</span>
+              <input type="file" id="post-image" class="hidden" accept="image/*">
+            </label>
+            <button onclick="criarPost()" id="btn-post" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-blue-700 transition">Publicar</button>
+          </div>
+        </div>
+        <div id="feed-container" class="space-y-4 pb-20"></div>
+      </main>
+
+      <!-- Barra de Contatos -->
+      <aside class="hidden lg:block">
+        <h3 class="font-bold text-gray-500 mb-4 uppercase text-xs tracking-widest px-2">Contatos Online</h3>
+        <div class="flex items-center gap-3 p-2 hover:bg-gray-200 rounded-lg cursor-pointer">
+          <div class="w-8 h-8 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+          <span class="font-semibold text-sm">Suporte Bayron</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Scripts do Firebase Grounded -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+    // Configuração do Jecob
+    const firebaseConfig = {
+      apiKey: "AIzaSyDLEUJmpOZUTDfhNbd8x5_B7ZDGHAo8CY0",
+      authDomain: "bayron-rede-social.firebaseapp.com",
+      projectId: "bayron-rede-social",
+      storageBucket: "bayron-rede-social.firebasestorage.app",
+      messagingSenderId: "621680847155",
+      appId: "1:621680847155:web:8d35a8af86660325e03646"
+    };
+
+    const IMGBB_API_KEY = "370b37d96c4eed4d111aec55b15cfa9a";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let userPhotoURL = null;
+
+    // Autenticação
+    window.login = () => {
+      const e = document.getElementById('email').value;
+      const p = document.getElementById('password').value;
+      signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+    };
+
+    window.registrar = () => {
+      const e = document.getElementById('email').value;
+      const p = document.getElementById('password').value;
+      createUserWithEmailAndPassword(auth, e, p).then(async (res) => {
+        await setDoc(doc(db, "users", res.user.uid), { email: e, photoURL: null });
+      }).catch(err => alert(err.message));
+    };
+
+    window.logout = () => signOut(auth);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        document.getElementById('auth-page').classList.add('hidden');
+        document.getElementById('app-page').classList.remove('hidden');
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) userPhotoURL = userDoc.data().photoURL;
+        updateUI();
+        carregarPosts();
+      } else {
+        document.getElementById('auth-page').classList.remove('hidden');
+        document.getElementById('app-page').classList.add('hidden');
+      }
+    });
+
+    function updateUI() {
+      const name = auth.currentUser.email.split('@')[0];
+      document.getElementById('user-name').innerText = name;
+      const mainPfp = document.getElementById('main-pfp');
+      const smallPfp = document.getElementById('small-pfp');
+      
+      if (userPhotoURL) {
+        const img = `<img src="${userPhotoURL}" class="w-full h-full object-cover">`;
+        mainPfp.innerHTML = img;
+        smallPfp.innerHTML = img;
+      } else {
+        mainPfp.innerText = name[0].toUpperCase();
+        smallPfp.innerText = name[0].toUpperCase();
+      }
+    }
+
+    // Upload de Imagem (Perfil e Posts via ImgBB)
+    async function uploadToImgBB(file) {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await fetch("https://api.imgbb.com/1/upload?key=" + IMGBB_API_KEY, { method: "POST", body: formData });
+      const data = await res.json();
+      return data.data.url;
+    }
+
+    window.uploadProfilePic = async (input) => {
+      if (!input.files[0]) return;
+      try {
+        const url = await uploadToImgBB(input.files[0]);
+        await setDoc(doc(db, "users", auth.currentUser.uid), { photoURL: url }, { merge: true });
+        userPhotoURL = url;
+        updateUI();
+        alert("Foto de perfil atualizada!");
+      } catch (e) { alert("Erro no upload"); }
+    };
+
+    window.criarPost = async () => {
+      const text = document.getElementById('post-text').value;
+      const file = document.getElementById('post-image').files[0];
+      const btn = document.getElementById('btn-post');
+      if (!text && !file) return;
+      
+      btn.innerText = "Publicando...";
+      try {
+        let postImg = file ? await uploadToImgBB(file) : null;
+        await addDoc(collection(db, "posts"), {
+          text,
+          image: postImg,
+          author: auth.currentUser.email,
+          authorPhoto: userPhotoURL,
+          timestamp: serverTimestamp()
+        });
+        document.getElementById('post-text').value = '';
+        document.getElementById('post-image').value = '';
+      } catch (e) { alert("Erro ao postar"); }
+      finally { btn.innerText = "Publicar"; }
+    };
+
+    function carregarPosts() {
+      const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+      onSnapshot(q, (snapshot) => {
+        const container = document.getElementById('feed-container');
+        container.innerHTML = '';
+        snapshot.forEach((doc) => {
+          const p = doc.data();
+          const avatar = p.authorPhoto ? `<img src="\({p.authorPhoto}" class="w-full h-full object-cover rounded-full">` : `<div class="w-full h-full pfp-circle">\){p.author[0].toUpperCase()}</div>`;
+          container.innerHTML += `
+            <div class="bg-white rounded-xl fb-shadow p-4 mb-4">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10">${avatar}</div>
+                <div class="font-bold text-blue-600">${p.author.split('@')[0]}</div>
+              </div>
+              <div class="mb-3">${p.text || ''}</div>
+              \({p.image ? `<img src="\){p.image}" class="w-full rounded-lg shadow-sm">` : ''}
+            </div>`;
+        });
+      });
+    }
+  </script>
+</body>
+</html>
