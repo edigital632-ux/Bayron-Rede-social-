@@ -3,97 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bayron Social — Versão Estável</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <title>Bayron X — The Ultimate Social Network</title>
+  <!-- Tailwind CSS Grounded -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background-color: #f0f2f5; font-family: sans-serif; }
-    .fb-shadow { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
+    :root { --bx-blue: #0062ff; }
+    body { background-color: #f4f7f6; font-family: 'Inter', system-ui, sans-serif; }
+    .glass-nav { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); }
+    .post-card { transition: transform 0.2s; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .post-card:hover { transform: translateY(-2px); }
     .hidden { display: none; }
-    .pfp-placeholder { background-color: #3b82f6; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; border-radius: 9999px; overflow: hidden; }
+    .pfp-main { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #0062ff; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; border: 2px solid #fff; }
+    .btn-gradient { background: linear-gradient(135deg, #0062ff, #00c6ff); }
+    /* Chat Estilo Ghost */
+    .bubble-discreet { filter: blur(4px); transition: filter 0.3s; cursor: pointer; }
+    .bubble-discreet:hover { filter: blur(0); }
   </style>
 </head>
-<body>
+<body class="pb-24">
 
-  <!-- TELA DE LOGIN / REGISTRO -->
-  <div id="auth-page" class="min-h-screen flex flex-col lg:flex-row items-center justify-center p-6 gap-10 lg:gap-40">
-    <div class="max-w-md text-center lg:text-left">
-      <h1 class="text-7xl font-extrabold text-blue-600 mb-4 tracking-tighter">Bayron</h1>
-      <p class="text-2xl font-medium text-gray-800">A rede social que você criou. Conecte-se agora de forma gratuita.</p>
-    </div>
-    <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm">
-      <input type="email" id="email" placeholder="E-mail" class="w-full p-3 mb-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-lg">
-      <input type="password" id="password" placeholder="Senha (mínimo 6 caracteres)" class="w-full p-3 mb-4 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-lg">
-      
-      <button id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg text-xl hover:bg-blue-700 transition shadow-md">Entrar</button>
-      
-      <hr class="my-6">
-      
-      <div class="text-center">
-        <button id="btn-registrar" class="w-full bg-green-500 text-white font-bold py-3 rounded-lg text-lg hover:bg-green-600 transition shadow-md">Criar conta gratuita</button>
+  <!-- CAMADA DE AUTENTICAÇÃO -->
+  <div id="auth-page" class="fixed inset-0 z-[100] flex items-center justify-center bg-white">
+    <div class="w-full max-w-md p-10 text-center">
+      <h1 class="text-7xl font-black text-blue-600 mb-2 tracking-tighter">X</h1>
+      <p class="text-gray-500 font-bold mb-10 italic">Powered by Bayron Intelligence</p>
+      <input type="email" id="email" placeholder="E-mail" class="w-full p-4 mb-3 bg-gray-100 rounded-2xl outline-none focus:ring-2 ring-blue-500 transition">
+      <input type="password" id="password" placeholder="Senha" class="w-full p-4 mb-6 bg-gray-100 rounded-2xl outline-none focus:ring-2 ring-blue-500 transition">
+      <div class="flex gap-4">
+        <button id="btn-login" class="flex-1 btn-gradient text-white font-bold py-4 rounded-2xl shadow-lg">Acessar</button>
+        <button id="btn-registrar" class="flex-1 border-2 border-gray-200 font-bold py-4 rounded-2xl hover:bg-gray-50">Criar conta</button>
       </div>
     </div>
   </div>
 
-  <!-- APP PRINCIPAL -->
+  <!-- PLATAFORMA PRINCIPAL -->
   <div id="app-page" class="hidden">
-    <nav class="bg-white h-14 flex items-center justify-between px-4 sticky top-0 z-50 fb-shadow">
-      <div class="flex items-center gap-2">
-        <div class="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center text-2xl font-black">B</div>
-        <div class="bg-gray-100 rounded-full px-4 py-2 text-gray-500 text-sm hidden md:block">🔍 Pesquisar no Bayron</div>
+    <nav class="glass-nav h-16 flex items-center justify-between px-8 sticky top-0 z-50 border-b border-gray-100 shadow-sm">
+      <div class="flex items-center gap-6">
+        <div class="text-3xl font-black text-blue-600">X</div>
+        <div class="hidden md:flex bg-gray-100 rounded-full px-4 py-2 gap-2 text-gray-400 w-64">
+          <span>🔍</span> <input type="text" placeholder="Explorar o Bayron X" class="bg-transparent outline-none text-sm w-full text-gray-800">
+        </div>
       </div>
-      <button id="btn-logout" class="bg-gray-200 px-4 py-2 rounded-lg font-bold hover:bg-gray-300 transition">Sair</button>
+      <div class="flex items-center gap-6">
+        <button onclick="switchTab('chat')" class="text-2xl">💬</button>
+        <div id="user-pfp" class="pfp-main shadow-md">?</div>
+      </div>
     </nav>
 
-    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 p-4">
-      <!-- Sidebar / Perfil -->
-      <aside class="space-y-4">
-        <div class="bg-white rounded-xl p-6 fb-shadow text-center">
-          <div class="relative inline-block">
-            <div id="main-pfp-box" class="w-24 h-24 mx-auto border-4 border-white shadow-md pfp-placeholder text-4xl">?</div>
-            <label class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 shadow border-2 border-white transition transform hover:scale-110">
-              📷 <input type="file" id="input-pfp" class="hidden" accept="image/*">
-            </label>
-          </div>
-          <h2 id="display-name" class="font-bold mt-4 text-xl">Usuário</h2>
-          <p class="text-xs text-gray-400 mt-1">Mude sua foto clicando na câmera</p>
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 p-6">
+      <!-- Sidebar Esquerda -->
+      <aside class="hidden lg:col-span-3 lg:block space-y-6">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-50">
+          <h3 class="font-bold text-blue-600 uppercase text-[10px] tracking-widest mb-4">Bayron AI Trends</h3>
+          <ul class="space-y-4 text-sm font-semibold">
+            <li class="flex justify-between items-center text-gray-700">#Tecnologia <span class="text-blue-500">🔥</span></li>
+            <li class="flex justify-between items-center text-gray-700">#BayronX <span class="text-blue-500">💎</span></li>
+          </ul>
         </div>
+        <nav class="space-y-1">
+          <button onclick="switchTab('feed')" class="w-full flex items-center gap-4 p-4 hover:bg-white hover:shadow-sm rounded-2xl transition font-bold text-gray-600">🏠 Feed Universal</button>
+          <button onclick="switchTab('friends')" class="w-full flex items-center gap-4 p-4 hover:bg-white hover:shadow-sm rounded-2xl transition font-bold text-gray-600">👥 Conexões</button>
+        </nav>
       </aside>
 
-      <!-- Feed -->
-      <main class="lg:col-span-2 space-y-4">
-        <div class="bg-white rounded-xl p-4 fb-shadow">
-          <div class="flex gap-3 mb-4">
-            <div id="small-pfp-box" class="w-10 h-10 pfp-placeholder text-xl shrink-0">?</div>
-            <input type="text" id="post-text" placeholder="No que você está pensando?" class="bg-gray-100 rounded-full flex-1 px-4 outline-none hover:bg-gray-200">
+      <!-- Centro: Fluxo de Conteúdo -->
+      <section class="lg:col-span-6 space-y-6">
+        <div id="tab-feed">
+          <div class="bg-white p-6 rounded-[30px] shadow-sm border border-gray-50 mb-8">
+            <div class="flex gap-4 mb-6">
+              <div class="composer-pfp pfp-main">?</div>
+              <textarea id="post-text" placeholder="Qual é o seu pensamento extraordinário hoje?" class="w-full bg-gray-50 rounded-2xl p-4 outline-none transition resize-none h-24 font-medium"></textarea>
+            </div>
+            <div class="flex justify-between items-center border-t border-gray-50 pt-4">
+              <label class="cursor-pointer flex items-center gap-2 font-bold text-gray-500">
+                🖼️ Mídia <input type="file" id="post-file" class="hidden" accept="image/*">
+              </label>
+              <button id="btn-post" class="btn-gradient text-white px-10 py-2.5 rounded-full font-black shadow-lg">Publicar</button>
+            </div>
           </div>
-          <hr class="mb-4">
-          <div class="flex justify-between items-center">
-            <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded-lg font-bold text-gray-600 transition">
-              <span class="text-green-500 text-2xl">🖼️</span>
-              <span>Foto</span>
-              <input type="file" id="post-image" class="hidden" accept="image/*">
-            </label>
-            <button id="btn-post" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-blue-700 transition">Publicar</button>
-          </div>
+          <div id="feed-container" class="space-y-8 pb-32"></div>
         </div>
-        <div id="feed-container" class="space-y-4 pb-20"></div>
-      </main>
 
-      <!-- Contatos -->
-      <aside class="hidden lg:block">
-        <h3 class="font-bold text-gray-500 mb-4 uppercase text-xs tracking-widest px-2">Online</h3>
-        <div class="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-          <div class="w-8 h-8 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
-          <span class="font-semibold text-sm">Suporte Bayron</span>
+        <div id="tab-chat" class="hidden h-[80vh] flex flex-col bg-white rounded-[30px] shadow-sm border overflow-hidden">
+          <div id="chat-messages" class="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50"></div>
+          <div class="p-6 bg-white flex gap-4">
+            <input type="text" id="chat-input" placeholder="Sua mensagem protegida..." class="flex-1 bg-gray-50 p-4 rounded-2xl outline-none">
+            <button id="btn-send-chat" class="btn-gradient w-14 h-14 rounded-2xl flex items-center justify-center text-white">🚀</button>
+          </div>
         </div>
-      </aside>
-    </div>
+      </section>
+    </main>
+
+    <!-- Menu Mobile -->
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-white border-t flex items-center justify-around z-50 rounded-t-[30px] shadow-2xl">
+      <button onclick="switchTab('feed')" class="p-3">🏠</button>
+      <button onclick="switchTab('friends')" class="p-3">👥</button>
+      <button onclick="switchTab('chat')" class="p-3">💬</button>
+    </nav>
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDLEUJmpOZUTDfhNbd8x5_B7ZDGHAo8CY0",
@@ -104,247 +117,94 @@
       appId: "1:621680847155:web:8d35a8af86660325e03646"
     };
 
-    const IMGBB_API_KEY = "370b37d96c4eed4d111aec55b15cfa9a";
-
+    const IMGBB_KEY = "370b37d96c4eed4d111aec55b15cfa9a";
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let userPhotoURL = null;
-    let unsubscribePosts = null;
+    let profile = null;
 
-    // --- REGISTRO ---
-    document.getElementById('btn-registrar').addEventListener('click', async () => {
-      const email = document.getElementById('email').value.trim();
-      const pass = document.getElementById('password').value;
-      const btn = document.getElementById('btn-registrar');
+    window.switchTab = (tab) => {
+      ['feed', 'chat', 'friends'].forEach(t => document.getElementById('tab-'+t)?.classList.add('hidden'));
+      document.getElementById('tab-'+tab).classList.remove('hidden');
+    };
 
-      if (!email) {
-        alert("Por favor, insira um e-mail válido.");
-        return;
-      }
-      if (pass.length < 6) {
-        alert("A senha precisa ter no mínimo 6 caracteres.");
-        return;
-      }
-
-      btn.innerText = "Criando conta...";
-      btn.disabled = true;
-
+    document.getElementById('btn-registrar').onclick = async () => {
+      const e = document.getElementById('email').value;
+      const p = document.getElementById('password').value;
       try {
-        const res = await createUserWithEmailAndPassword(auth, email, pass);
-        await setDoc(doc(db, "users", res.user.uid), { email: email, photoURL: null });
-        alert("Conta criada com sucesso! Bem-vindo ao Bayron.");
-      } catch (err) {
-        const msgs = {
-          'auth/email-already-in-use': 'Este e-mail já está em uso.',
-          'auth/invalid-email': 'E-mail inválido.',
-          'auth/weak-password': 'Senha muito fraca. Use pelo menos 6 caracteres.',
-          'auth/network-request-failed': 'Sem conexão com a internet.'
-        };
-        alert(msgs[err.code] || "Erro ao criar conta: " + err.message);
-      } finally {
-        btn.innerText = "Criar conta gratuita";
-        btn.disabled = false;
-      }
-    });
+        const res = await createUserWithEmailAndPassword(auth, e, p);
+        await setDoc(doc(db, "users", res.user.uid), { email: e, photoURL: null, uid: res.user.uid });
+        alert("Sua jornada extraordinária começou!");
+      } catch (err) { alert(err.message); }
+    };
 
-    // --- LOGIN ---
-    document.getElementById('btn-login').addEventListener('click', async () => {
-      const email = document.getElementById('email').value.trim();
-      const pass = document.getElementById('password').value;
-      const btn = document.getElementById('btn-login');
+    document.getElementById('btn-login').onclick = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value).catch(e => alert(e.message));
 
-      if (!email || !pass) {
-        alert("Preencha e-mail e senha.");
-        return;
-      }
-
-      btn.innerText = "Entrando...";
-      btn.disabled = true;
-
-      try {
-        await signInWithEmailAndPassword(auth, email, pass);
-      } catch (err) {
-        const msgs = {
-          'auth/user-not-found': 'Usuário não encontrado.',
-          'auth/wrong-password': 'Senha incorreta.',
-          'auth/invalid-email': 'E-mail inválido.',
-          'auth/invalid-credential': 'E-mail ou senha incorretos.',
-          'auth/network-request-failed': 'Sem conexão com a internet.'
-        };
-        alert(msgs[err.code] || "Erro no login: " + err.message);
-      } finally {
-        btn.innerText = "Entrar";
-        btn.disabled = false;
-      }
-    });
-
-    // --- LOGOUT ---
-    document.getElementById('btn-logout').addEventListener('click', () => {
-      if (unsubscribePosts) unsubscribePosts();
-      signOut(auth);
-    });
-
-    // --- MONITOR DE ESTADO ---
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById('auth-page').classList.add('hidden');
         document.getElementById('app-page').classList.remove('hidden');
-
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) userPhotoURL = userDoc.data().photoURL || null;
-        } catch (e) {
-          userPhotoURL = null;
-        }
-
+        const d = await getDoc(doc(db, "users", user.uid));
+        profile = d.data();
         updateUI();
-        carregarPosts();
+        loadEngine();
       } else {
         document.getElementById('auth-page').classList.remove('hidden');
         document.getElementById('app-page').classList.add('hidden');
-        userPhotoURL = null;
       }
     });
-
-    function getAvatarHTML(photoURL, name, classes) {
-      const initial = (name || '?')[0].toUpperCase();
-      if (photoURL) {
-        return `<img src="${photoURL}" class="${classes} object-cover rounded-full" style="width:100%;height:100%;">`;
-      }
-      return `<span>${initial}</span>`;
-    }
 
     function updateUI() {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const name = user.email.split('@')[0];
-      document.getElementById('display-name').innerText = name;
-
-      const mainBox = document.getElementById('main-pfp-box');
-      const smallBox = document.getElementById('small-pfp-box');
-
-      if (userPhotoURL) {
-        mainBox.innerHTML = `<img src="${userPhotoURL}" class="w-full h-full object-cover">`;
-        smallBox.innerHTML = `<img src="${userPhotoURL}" class="w-full h-full object-cover rounded-full">`;
-      } else {
-        mainBox.innerHTML = `<span>${name[0].toUpperCase()}</span>`;
-        smallBox.innerHTML = `<span>${name[0].toUpperCase()}</span>`;
-      }
+      const avatar = profile.photoURL ? `<img src="${profile.photoURL}" class="w-full h-full object-cover">` : profile.email[0].toUpperCase();
+      document.getElementById('user-pfp').innerHTML = avatar;
+      document.querySelectorAll('.composer-pfp').forEach(el => el.innerHTML = avatar);
     }
 
-    // --- UPLOAD FOTO DE PERFIL ---
-    document.getElementById('input-pfp').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const formData = new FormData();
-      formData.append("image", file);
-
-      try {
-        const res = await fetch("https://api.imgbb.com/1/upload?key=" + IMGBB_API_KEY, { method: "POST", body: formData });
-        const data = await res.json();
-
-        if (!data.success) throw new Error("Upload falhou");
-
-        const url = data.data.url;
-        await setDoc(doc(db, "users", auth.currentUser.uid), { photoURL: url }, { merge: true });
-        userPhotoURL = url;
-        updateUI();
-        alert("Foto atualizada!");
-      } catch (err) {
-        alert("Erro ao subir foto: " + err.message);
-      }
-    });
-
-    // --- CRIAR POST ---
-    document.getElementById('btn-post').addEventListener('click', async () => {
-      const text = document.getElementById('post-text').value.trim();
-      const file = document.getElementById('post-image').files[0];
-      const btn = document.getElementById('btn-post');
-
-      if (!text && !file) {
-        alert("Escreva algo ou selecione uma foto para publicar.");
-        return;
-      }
-
-      btn.innerText = "Publicando...";
-      btn.disabled = true;
-
-      try {
-        let imgUrl = null;
-        if (file) {
-          const formData = new FormData();
-          formData.append("image", file);
-          const res = await fetch("https://api.imgbb.com/1/upload?key=" + IMGBB_API_KEY, { method: "POST", body: formData });
-          const data = await res.json();
-          if (!data.success) throw new Error("Falha no upload da imagem");
-          imgUrl = data.data.url;
-        }
-
-        await addDoc(collection(db, "posts"), {
-          text: text,
-          image: imgUrl,
-          author: auth.currentUser.email,
-          authorPhoto: userPhotoURL || null,
-          timestamp: serverTimestamp()
-        });
-
-        document.getElementById('post-text').value = '';
-        document.getElementById('post-image').value = '';
-      } catch (err) {
-        alert("Erro ao postar: " + err.message);
-      } finally {
-        btn.innerText = "Publicar";
-        btn.disabled = false;
-      }
-    });
-
-    // --- CARREGAR POSTS (BUG PRINCIPAL CORRIGIDO: template literals) ---
-    function carregarPosts() {
-      if (unsubscribePosts) unsubscribePosts();
-
-      const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
-      unsubscribePosts = onSnapshot(q, (snapshot) => {
+    function loadEngine() {
+      onSnapshot(query(collection(db, "posts"), orderBy("timestamp", "desc")), (snap) => {
         const container = document.getElementById('feed-container');
         container.innerHTML = '';
-
-        snapshot.forEach((docSnap) => {
+        snap.forEach(docSnap => {
           const p = docSnap.data();
-          const authorName = (p.author || 'anon').split('@')[0];
-          const initial = authorName[0].toUpperCase();
-
-          // FIX: avatar HTML montado com concatenação simples para evitar problemas de template
-          let avatarHTML;
-          if (p.authorPhoto) {
-            avatarHTML = '<img src="' + p.authorPhoto + '" class="w-full h-full object-cover rounded-full">';
-          } else {
-            avatarHTML = '<div class="w-full h-full pfp-placeholder flex items-center justify-center font-bold text-white">' + initial + '</div>';
-          }
-
-          let imageHTML = '';
-          if (p.image) {
-            imageHTML = '<img src="' + p.image + '" class="w-full rounded-lg shadow-sm max-h-96 object-cover mt-3">';
-          }
-
-          const postHTML =
-            '<div class="bg-white rounded-xl fb-shadow p-4 mb-4">' +
-              '<div class="flex items-center gap-3 mb-3">' +
-                '<div class="w-10 h-10 rounded-full overflow-hidden pfp-placeholder shrink-0">' + avatarHTML + '</div>' +
-                '<div class="font-bold text-blue-600">' + authorName + '</div>' +
-              '</div>' +
-              '<div class="text-gray-800">' + (p.text || '') + '</div>' +
-              imageHTML +
-            '</div>';
-
-          container.innerHTML += postHTML;
+          container.innerHTML += `
+            <div class="bg-white p-6 rounded-[30px] post-card border border-gray-50">
+              <div class="flex items-center gap-4 mb-5">
+                <div class="w-12 h-12 pfp-main">\({p.authorPhoto ? `<img src="\){p.authorPhoto}" class="w-full h-full object-cover rounded-full">` : p.author[0].toUpperCase()}</div>
+                <div>
+                  <div class="font-black text-gray-800">${p.author.split('@')[0]}</div>
+                  <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bayron X Member</div>
+                </div>
+              </div>
+              <div class="text-gray-800 text-lg mb-5 font-medium leading-relaxed">${p.text || ''}</div>
+              \({p.image ? `<img src="\){p.image}" class="w-full rounded-[25px] shadow-2xl mb-5 max-h-[500px] object-cover">` : ''}
+              <div class="flex items-center justify-between border-t border-gray-50 pt-5 text-gray-500 font-bold">
+                <button>💙 Reagir</button>
+                <button>💬 Comentar</button>
+              </div>
+            </div>`;
         });
-      }, (err) => {
-        console.error("Erro ao carregar posts:", err);
       });
     }
+
+    document.getElementById('btn-post').onclick = async () => {
+      const text = document.getElementById('post-text').value;
+      const file = document.getElementById('post-file').files[0];
+      const btn = document.getElementById('btn-post');
+      if (!text && !file) return;
+      btn.innerText = "...";
+      let imgUrl = null;
+      if (file) {
+        const fd = new FormData(); fd.append("image", file);
+        const res = await fetch("https://api.imgbb.com/1/upload?key=" + IMGBB_KEY, { method: "POST", body: fd });
+        const json = await res.json(); imgUrl = json.data.url;
+      }
+      await addDoc(collection(db, "posts"), {
+        text, image: imgUrl, author: auth.currentUser.email, authorPhoto: profile.photoURL, timestamp: serverTimestamp()
+      });
+      document.getElementById('post-text').value = '';
+      btn.innerText = "Publicar";
+    };
   </script>
 </body>
 </html>
