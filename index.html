@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bayron Social — Versão Estável</title>
-  <!-- Tailwind CSS Grounded -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style>
     body { background-color: #f0f2f5; font-family: sans-serif; }
@@ -96,7 +95,6 @@
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
-    // --- CONFIGURAÇÃO JECOB ---
     const firebaseConfig = {
       apiKey: "AIzaSyDLEUJmpOZUTDfhNbd8x5_B7ZDGHAo8CY0",
       authDomain: "bayron-rede-social.firebaseapp.com",
@@ -113,15 +111,20 @@
     const db = getFirestore(app);
 
     let userPhotoURL = null;
+    let unsubscribePosts = null;
 
-    // --- LOGICA DE REGISTRO CORRIGIDA ---
+    // --- REGISTRO ---
     document.getElementById('btn-registrar').addEventListener('click', async () => {
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('email').value.trim();
       const pass = document.getElementById('password').value;
       const btn = document.getElementById('btn-registrar');
 
-      if (!email || pass.length < 6) {
-        alert("Por favor, preencha o e-mail e uma senha de no mínimo 6 caracteres.");
+      if (!email) {
+        alert("Por favor, insira um e-mail válido.");
+        return;
+      }
+      if (pass.length < 6) {
+        alert("A senha precisa ter no mínimo 6 caracteres.");
         return;
       }
 
@@ -133,62 +136,106 @@
         await setDoc(doc(db, "users", res.user.uid), { email: email, photoURL: null });
         alert("Conta criada com sucesso! Bem-vindo ao Bayron.");
       } catch (err) {
-        alert("Erro ao criar conta: " + err.message);
+        const msgs = {
+          'auth/email-already-in-use': 'Este e-mail já está em uso.',
+          'auth/invalid-email': 'E-mail inválido.',
+          'auth/weak-password': 'Senha muito fraca. Use pelo menos 6 caracteres.',
+          'auth/network-request-failed': 'Sem conexão com a internet.'
+        };
+        alert(msgs[err.code] || "Erro ao criar conta: " + err.message);
       } finally {
         btn.innerText = "Criar conta gratuita";
         btn.disabled = false;
       }
     });
 
-    // --- LOGICA DE LOGIN ---
+    // --- LOGIN ---
     document.getElementById('btn-login').addEventListener('click', async () => {
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('email').value.trim();
       const pass = document.getElementById('password').value;
+      const btn = document.getElementById('btn-login');
+
+      if (!email || !pass) {
+        alert("Preencha e-mail e senha.");
+        return;
+      }
+
+      btn.innerText = "Entrando...";
+      btn.disabled = true;
+
       try {
         await signInWithEmailAndPassword(auth, email, pass);
       } catch (err) {
-        alert("Erro no login: " + err.message);
+        const msgs = {
+          'auth/user-not-found': 'Usuário não encontrado.',
+          'auth/wrong-password': 'Senha incorreta.',
+          'auth/invalid-email': 'E-mail inválido.',
+          'auth/invalid-credential': 'E-mail ou senha incorretos.',
+          'auth/network-request-failed': 'Sem conexão com a internet.'
+        };
+        alert(msgs[err.code] || "Erro no login: " + err.message);
+      } finally {
+        btn.innerText = "Entrar";
+        btn.disabled = false;
       }
     });
 
-    // --- LOGICA DE LOGOUT ---
-    document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+    // --- LOGOUT ---
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      if (unsubscribePosts) unsubscribePosts();
+      signOut(auth);
+    });
 
-    // --- MONITOR DE ESTADO (LOGIN/LOGOUT) ---
+    // --- MONITOR DE ESTADO ---
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById('auth-page').classList.add('hidden');
         document.getElementById('app-page').classList.remove('hidden');
-        
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) userPhotoURL = userDoc.data().photoURL;
-        
+
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) userPhotoURL = userDoc.data().photoURL || null;
+        } catch (e) {
+          userPhotoURL = null;
+        }
+
         updateUI();
         carregarPosts();
       } else {
         document.getElementById('auth-page').classList.remove('hidden');
         document.getElementById('app-page').classList.add('hidden');
+        userPhotoURL = null;
       }
     });
 
+    function getAvatarHTML(photoURL, name, classes) {
+      const initial = (name || '?')[0].toUpperCase();
+      if (photoURL) {
+        return `<img src="${photoURL}" class="${classes} object-cover rounded-full" style="width:100%;height:100%;">`;
+      }
+      return `<span>${initial}</span>`;
+    }
+
     function updateUI() {
-      const name = auth.currentUser.email.split('@')[0];
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const name = user.email.split('@')[0];
       document.getElementById('display-name').innerText = name;
-      
+
       const mainBox = document.getElementById('main-pfp-box');
       const smallBox = document.getElementById('small-pfp-box');
-      
+
       if (userPhotoURL) {
-        const img = `<img src="${userPhotoURL}" class="w-full h-full object-cover">`;
-        mainBox.innerHTML = img;
+        mainBox.innerHTML = `<img src="${userPhotoURL}" class="w-full h-full object-cover">`;
         smallBox.innerHTML = `<img src="${userPhotoURL}" class="w-full h-full object-cover rounded-full">`;
       } else {
-        mainBox.innerText = name[0].toUpperCase();
-        smallBox.innerText = name[0].toUpperCase();
+        mainBox.innerHTML = `<span>${name[0].toUpperCase()}</span>`;
+        smallBox.innerHTML = `<span>${name[0].toUpperCase()}</span>`;
       }
     }
 
-    // --- UPLOAD DE FOTO DE PERFIL ---
+    // --- UPLOAD FOTO DE PERFIL ---
     document.getElementById('input-pfp').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -199,23 +246,31 @@
       try {
         const res = await fetch("https://api.imgbb.com/1/upload?key=" + IMGBB_API_KEY, { method: "POST", body: formData });
         const data = await res.json();
-        const url = data.data.url;
 
+        if (!data.success) throw new Error("Upload falhou");
+
+        const url = data.data.url;
         await setDoc(doc(db, "users", auth.currentUser.uid), { photoURL: url }, { merge: true });
         userPhotoURL = url;
         updateUI();
         alert("Foto atualizada!");
-      } catch (err) { alert("Erro ao subir foto."); }
+      } catch (err) {
+        alert("Erro ao subir foto: " + err.message);
+      }
     });
 
     // --- CRIAR POST ---
     document.getElementById('btn-post').addEventListener('click', async () => {
-      const text = document.getElementById('post-text').value;
+      const text = document.getElementById('post-text').value.trim();
       const file = document.getElementById('post-image').files[0];
       const btn = document.getElementById('btn-post');
 
-      if (!text && !file) return;
-      btn.innerText = "...";
+      if (!text && !file) {
+        alert("Escreva algo ou selecione uma foto para publicar.");
+        return;
+      }
+
+      btn.innerText = "Publicando...";
       btn.disabled = true;
 
       try {
@@ -225,45 +280,69 @@
           formData.append("image", file);
           const res = await fetch("https://api.imgbb.com/1/upload?key=" + IMGBB_API_KEY, { method: "POST", body: formData });
           const data = await res.json();
+          if (!data.success) throw new Error("Falha no upload da imagem");
           imgUrl = data.data.url;
         }
 
         await addDoc(collection(db, "posts"), {
-          text,
+          text: text,
           image: imgUrl,
           author: auth.currentUser.email,
-          authorPhoto: userPhotoURL,
+          authorPhoto: userPhotoURL || null,
           timestamp: serverTimestamp()
         });
 
         document.getElementById('post-text').value = '';
         document.getElementById('post-image').value = '';
-      } catch (err) { alert("Erro ao postar."); }
-      finally {
+      } catch (err) {
+        alert("Erro ao postar: " + err.message);
+      } finally {
         btn.innerText = "Publicar";
         btn.disabled = false;
       }
     });
 
+    // --- CARREGAR POSTS (BUG PRINCIPAL CORRIGIDO: template literals) ---
     function carregarPosts() {
+      if (unsubscribePosts) unsubscribePosts();
+
       const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
-      onSnapshot(q, (snapshot) => {
+      unsubscribePosts = onSnapshot(q, (snapshot) => {
         const container = document.getElementById('feed-container');
         container.innerHTML = '';
-        snapshot.forEach((doc) => {
-          const p = doc.data();
-          const avatar = p.authorPhoto ? `<img src="\({p.authorPhoto}" class="w-full h-full object-cover rounded-full">` : `<div class="w-full h-full pfp-placeholder">\){p.author[0].toUpperCase()}</div>`;
-          
-          container.innerHTML += `
-            <div class="bg-white rounded-xl fb-shadow p-4 mb-4">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10">${avatar}</div>
-                <div class="font-bold text-blue-600">${p.author.split('@')[0]}</div>
-              </div>
-              <div class="mb-3 text-gray-800">${p.text || ''}</div>
-              \({p.image ? `<img src="\){p.image}" class="w-full rounded-lg shadow-sm max-h-96 object-cover">` : ''}
-            </div>`;
+
+        snapshot.forEach((docSnap) => {
+          const p = docSnap.data();
+          const authorName = (p.author || 'anon').split('@')[0];
+          const initial = authorName[0].toUpperCase();
+
+          // FIX: avatar HTML montado com concatenação simples para evitar problemas de template
+          let avatarHTML;
+          if (p.authorPhoto) {
+            avatarHTML = '<img src="' + p.authorPhoto + '" class="w-full h-full object-cover rounded-full">';
+          } else {
+            avatarHTML = '<div class="w-full h-full pfp-placeholder flex items-center justify-center font-bold text-white">' + initial + '</div>';
+          }
+
+          let imageHTML = '';
+          if (p.image) {
+            imageHTML = '<img src="' + p.image + '" class="w-full rounded-lg shadow-sm max-h-96 object-cover mt-3">';
+          }
+
+          const postHTML =
+            '<div class="bg-white rounded-xl fb-shadow p-4 mb-4">' +
+              '<div class="flex items-center gap-3 mb-3">' +
+                '<div class="w-10 h-10 rounded-full overflow-hidden pfp-placeholder shrink-0">' + avatarHTML + '</div>' +
+                '<div class="font-bold text-blue-600">' + authorName + '</div>' +
+              '</div>' +
+              '<div class="text-gray-800">' + (p.text || '') + '</div>' +
+              imageHTML +
+            '</div>';
+
+          container.innerHTML += postHTML;
         });
+      }, (err) => {
+        console.error("Erro ao carregar posts:", err);
       });
     }
   </script>
