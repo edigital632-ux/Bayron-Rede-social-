@@ -4,31 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rede Social Byron</title>
-  <!-- Tailwind CSS Oficial v4 -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style>
-    body { background-color: #f0f2f5; font-family: sans-serif; }
+    body { background-color: #f0f2f5; font-family: sans-serif; transition: 0.3s; }
+    body.dark { background-color: #18191a; color: white; }
+    body.dark .card { background-color: #242526 !important; color: #e4e6eb; }
+    body.dark .input-field { background-color: #3a3b3c !important; color: #e4e6eb; }
+    body.dark nav { background-color: #242526 !important; }
+    body.dark .text-gray-800 { color: #e4e6eb; }
+    body.dark .text-gray-500 { color: #b0b3b8; }
+    .fb-shadow { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
     .hidden { display: none; }
-    .fb-shadow { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
-    .pfp-placeholder { background-color: #1877f2; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; overflow: hidden; }
+    .pfp-placeholder {
+      background-color: #1877f2;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      border-radius: 50%;
+      overflow: hidden;
+    }
   </style>
 </head>
-<body class="pb-20">
+<body id="main-body" class="pb-20">
 
-  <!-- TELA DE LOGIN / REGISTRO -->
+  <!-- TELA DE ACESSO -->
   <div id="auth-page" class="min-h-screen flex flex-col lg:flex-row items-center justify-center p-6 gap-10 lg:gap-32 bg-[#f0f2f5]">
     <div class="max-w-md text-center lg:text-left">
-      <h1 class="text-6xl font-bold text-[#1877f2] mb-4">Byron</h1>
-      <p class="text-2xl font-medium text-gray-800 leading-tight">Conecte-se e compartilhe com as pessoas que fazem parte da sua vida na Rede Social Byron.</p>
+      <h1 class="text-6xl font-black text-[#1877f2] mb-4">Byron</h1>
+      <p class="text-2xl font-medium text-gray-800 leading-tight">A Rede Social Byron ajuda você a se conectar e compartilhar com quem é importante.</p>
     </div>
-    
-    <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm">
-      <div class="space-y-4">
-        <input type="email" id="email" placeholder="E-mail" class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-lg">
-        <input type="password" id="password" placeholder="Senha (mínimo 6 caracteres)" class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-lg">
-        
-        <button id="btn-login" class="w-full bg-[#1877f2] text-white font-bold py-3 rounded-lg text-xl hover:bg-blue-700 transition shadow-md">Entrar</button>
-        
+
+    <div class="card bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm">
+      <div class="flex flex-col gap-4">
+        <input type="email" id="email" placeholder="E-mail" class="input-field w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-lg text-black">
+        <input type="password" id="password" placeholder="Senha (mínimo 6 caracteres)" class="input-field w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-lg text-black">
+        <div id="auth-error" class="text-red-500 text-sm text-center hidden"></div>
+        <button id="btn-login" class="w-full bg-[#1877f2] text-white font-bold py-3 rounded-lg text-xl hover:bg-blue-700 transition">Entrar</button>
+        <div class="text-center text-blue-500 text-sm hover:underline cursor-pointer">Esqueceu a conta?</div>
         <hr>
         <div class="text-center pt-2">
           <button id="btn-registrar" class="bg-[#42b72a] text-white font-bold px-8 py-3 rounded-lg text-lg hover:bg-green-600 transition shadow-md">Criar nova conta</button>
@@ -37,28 +51,39 @@
     </div>
   </div>
 
-  <!-- APP PRINCIPAL -->
+  <!-- PLATAFORMA PRINCIPAL -->
   <div id="app-page" class="hidden">
-    <nav class="bg-white h-14 flex items-center justify-between px-4 sticky top-0 z-50 fb-shadow">
-      <div class="text-2xl font-bold text-[#1877f2]">Byron</div>
+    <nav class="bg-white h-16 flex items-center justify-between px-6 sticky top-0 z-50 fb-shadow">
+      <div class="text-3xl font-black text-[#1877f2]">Byron</div>
       <div class="flex items-center gap-4">
-        <button id="btn-logout" class="bg-gray-200 px-4 py-1.5 rounded-lg font-bold text-sm hover:bg-gray-300">Sair</button>
+        <button onclick="document.getElementById('main-body').classList.toggle('dark')" class="text-2xl" title="Alternar tema">🌓</button>
+        <div id="nav-pfp" class="w-10 h-10 pfp-placeholder text-sm font-bold">?</div>
+        <span id="nav-name" class="font-semibold text-gray-700 hidden md:block"></span>
+        <button id="btn-logout" class="font-bold text-red-500 hover:bg-red-50 p-2 rounded-lg transition text-sm">Sair</button>
       </div>
     </nav>
 
     <main class="max-w-xl mx-auto p-4 space-y-4">
+      <!-- Stories -->
+      <div class="flex gap-2 overflow-x-auto pb-2">
+        <div class="w-28 h-44 bg-blue-600 rounded-xl shrink-0 p-3 flex flex-col justify-end text-white font-bold text-[10px] shadow">Seu Story</div>
+        <div class="w-28 h-44 bg-gray-300 rounded-xl shrink-0"></div>
+        <div class="w-28 h-44 bg-gray-400 rounded-xl shrink-0"></div>
+      </div>
+
       <!-- Caixa de Postagem -->
-      <div class="bg-white p-4 rounded-xl fb-shadow">
+      <div class="card bg-white p-4 rounded-xl fb-shadow">
         <div class="flex gap-3 mb-4">
-          <div id="composer-pfp" class="w-10 h-10 pfp-placeholder text-lg shrink-0">?</div>
-          <input type="text" id="post-text" placeholder="No que você está pensando?" class="bg-gray-100 rounded-full flex-1 px-4 outline-none hover:bg-gray-200">
+          <div id="composer-pfp" class="w-11 h-11 pfp-placeholder text-lg shrink-0 font-bold">?</div>
+          <input type="text" id="post-text" placeholder="No que você está pensando?" class="input-field bg-gray-100 rounded-full flex-1 px-4 outline-none hover:bg-gray-200 text-black">
         </div>
         <hr class="mb-3">
         <div class="flex justify-between items-center">
           <label class="cursor-pointer flex items-center gap-2 font-bold text-gray-500 hover:bg-gray-100 p-2 rounded-lg transition">
-            📸 Foto <input type="file" id="post-file" class="hidden" accept="image/*">
+            🖼️ Foto <input type="file" id="post-file" class="hidden" accept="image/*">
           </label>
-          <button id="btn-post" class="bg-[#1877f2] text-white px-8 py-1.5 rounded-lg font-bold hover:bg-blue-700 transition">Publicar</button>
+          <span id="file-name" class="text-xs text-gray-400 truncate max-w-[100px]"></span>
+          <button id="btn-post" class="bg-[#1877f2] text-white px-8 py-1.5 rounded-lg font-bold hover:bg-blue-700 transition shadow-md">Publicar</button>
         </div>
       </div>
 
@@ -68,19 +93,23 @@
   </div>
 
   <script type="module">
-    // URLs validadas do Firebase SDK v10.7.1
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import {
+      getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import {
+      getFirestore, doc, setDoc, getDoc, collection, addDoc,
+      query, orderBy, onSnapshot, serverTimestamp, updateDoc, arrayUnion, arrayRemove
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Suas credenciais do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyDLEUJmpOZUTDfhNbd8x5_B7ZDGHAo8CY0",
       authDomain: "bayron-rede-social.firebaseapp.com",
       projectId: "bayron-rede-social",
-      storageBucket: "bayron-rede-social.appspot.com",
-      messagingSenderId: "1056586043135",
-      appId: "1:1056586043135:web:865582c617b4478142273d"
+      storageBucket: "bayron-rede-social.firebasestorage.app",
+      messagingSenderId: "621680847155",
+      appId: "1:621680847155:web:8d35a8af86660325e03646"
     };
 
     const IMGBB_KEY = "370b37d96c4eed4d111aec55b15cfa9a";
@@ -89,114 +118,142 @@
     const db = getFirestore(app);
 
     let myProfile = null;
+    let unsubFeed = null;
 
-    // --- LÓGICA DE REGISTRO ---
+    // Mostrar nome do arquivo selecionado
+    document.getElementById('post-file').addEventListener('change', (e) => {
+      const f = e.target.files[0];
+      document.getElementById('file-name').innerText = f ? f.name : '';
+    });
+
+    // Mostrar erro na tela de login
+    function showError(msg) {
+      const el = document.getElementById('auth-error');
+      el.innerText = msg;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    // Mensagens de erro amigáveis
+    function friendlyError(code) {
+      const map = {
+        'auth/email-already-in-use': 'Este e-mail já está cadastrado.',
+        'auth/invalid-email': 'E-mail inválido.',
+        'auth/weak-password': 'Senha fraca. Use pelo menos 6 caracteres.',
+        'auth/user-not-found': 'Usuário não encontrado.',
+        'auth/wrong-password': 'Senha incorreta.',
+        'auth/invalid-credential': 'E-mail ou senha incorretos.',
+        'auth/network-request-failed': 'Sem conexão com a internet.',
+        'auth/too-many-requests': 'Muitas tentativas. Tente novamente em alguns minutos.'
+      };
+      return map[code] || null;
+    }
+
+    // --- REGISTRO ---
     document.getElementById('btn-registrar').addEventListener('click', async () => {
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('email').value.trim();
       const pass = document.getElementById('password').value;
       const btn = document.getElementById('btn-registrar');
 
-      if (!email || pass.length < 6) {
-        alert("Por favor, insira um e-mail válido e uma senha de no mínimo 6 caracteres.");
-        return;
-      }
+      if (!email) { showError("Insira um e-mail válido."); return; }
+      if (pass.length < 6) { showError("A senha precisa ter pelo menos 6 caracteres."); return; }
 
-      btn.innerText = "Criando conta...";
+      btn.innerText = "Criando...";
       btn.disabled = true;
 
       try {
         const res = await createUserWithEmailAndPassword(auth, email, pass);
-        // Salva os dados do usuário no Firestore
         await setDoc(doc(db, "users", res.user.uid), {
           email: email,
-          photoURL: null,
           uid: res.user.uid,
+          photoURL: null,
           createdAt: serverTimestamp()
         });
-        alert("Conta criada com sucesso na Rede Social Byron!");
+        // onAuthStateChanged cuida do redirecionamento
       } catch (err) {
-        console.error("Erro no registro:", err);
-        alert("Não foi possível criar a conta. Verifique se o método 'E-mail/Senha' está ativado no Firebase Console. Erro: " + err.message);
+        showError(friendlyError(err.code) || ("Erro: " + err.message));
       } finally {
         btn.innerText = "Criar nova conta";
         btn.disabled = false;
       }
     });
 
-    // --- LÓGICA DE LOGIN ---
+    // --- LOGIN ---
     document.getElementById('btn-login').addEventListener('click', async () => {
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('email').value.trim();
       const pass = document.getElementById('password').value;
+      const btn = document.getElementById('btn-login');
+
+      if (!email || !pass) { showError("Preencha e-mail e senha."); return; }
+
+      btn.innerText = "Entrando...";
+      btn.disabled = true;
+
       try {
         await signInWithEmailAndPassword(auth, email, pass);
       } catch (err) {
-        alert("Erro no login: " + err.message);
+        showError(friendlyError(err.code) || ("Erro: " + err.message));
+      } finally {
+        btn.innerText = "Entrar";
+        btn.disabled = false;
       }
     });
 
     // --- LOGOUT ---
-    document.getElementById('btn-logout').onclick = () => signOut(auth);
+    document.getElementById('btn-logout').onclick = () => {
+      if (unsubFeed) unsubFeed();
+      signOut(auth);
+    };
 
-    // --- MONITOR DE ESTADO ---
+    // --- ESTADO DE AUTENTICAÇÃO ---
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById('auth-page').classList.add('hidden');
         document.getElementById('app-page').classList.remove('hidden');
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        myProfile = userDoc.exists() ? userDoc.data() : { email: user.email };
+
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          myProfile = userDoc.exists() ? userDoc.data() : { email: user.email, photoURL: null };
+        } catch (e) {
+          myProfile = { email: user.email, photoURL: null };
+        }
+
         updateUI();
         loadFeed();
       } else {
         document.getElementById('auth-page').classList.remove('hidden');
         document.getElementById('app-page').classList.add('hidden');
+        myProfile = null;
       }
     });
 
     function updateUI() {
-      const initial = myProfile.email[0].toUpperCase();
-      const composerPfp = document.getElementById('composer-pfp');
-      if (myProfile.photoURL) {
-        composerPfp.innerHTML = `<img src="${myProfile.photoURL}" class="w-full h-full object-cover">`;
-      } else {
-        composerPfp.innerText = initial;
-      }
-    }
+      if (!myProfile) return;
+      const initial = (myProfile.email || '?')[0].toUpperCase();
+      const name = (myProfile.email || '').split('@')[0];
 
-    // --- CARREGAR FEED ---
-    function loadFeed() {
-      const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
-      onSnapshot(q, (snap) => {
-        const container = document.getElementById('feed-container');
-        container.innerHTML = '';
-        snap.forEach(d => {
-          const p = d.data();
-          const avatar = p.authorPhoto ? `<img src="\({p.authorPhoto}" class="w-full h-full object-cover rounded-full">` : `<div class="w-full h-full pfp-placeholder">\){p.author[0].toUpperCase()}</div>`;
-          
-          container.innerHTML += `
-            <div class="bg-white p-4 rounded-xl fb-shadow">
-              <div class="flex items-center gap-3 mb-3">
-                <div class="w-10 h-10">${avatar}</div>
-                <div class="font-bold text-sm text-gray-800">${p.author.split('@')[0]}</div>
-              </div>
-              <div class="text-gray-800 mb-3">${p.text || ''}</div>
-              \({p.image ? `<img src="\){p.image}" class="w-full rounded-lg shadow-sm">` : ''}
-              <div class="flex border-t mt-3 pt-2 text-gray-500 font-bold text-sm">
-                <button class="flex-1 py-2 hover:bg-gray-50 rounded-lg">👍 Curtir</button>
-                <button class="flex-1 py-2 hover:bg-gray-50 rounded-lg">💬 Comentar</button>
-              </div>
-            </div>`;
-        });
+      document.getElementById('nav-name').innerText = name;
+
+      ['nav-pfp', 'composer-pfp'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (myProfile.photoURL) {
+          el.innerHTML = '<img src="' + myProfile.photoURL + '" class="w-full h-full object-cover">';
+        } else {
+          el.innerText = initial;
+        }
       });
     }
 
-    // --- LÓGICA DE POSTAR ---
-    document.getElementById('btn-post').onclick = async () => {
-      const text = document.getElementById('post-text').value;
+    // --- CRIAR POST ---
+    document.getElementById('btn-post').addEventListener('click', async () => {
+      const text = document.getElementById('post-text').value.trim();
       const file = document.getElementById('post-file').files[0];
       const btn = document.getElementById('btn-post');
+
       if (!text && !file) return;
 
-      btn.innerText = "...";
+      btn.innerText = "Publicando...";
       btn.disabled = true;
 
       try {
@@ -206,24 +263,108 @@
           fd.append("image", file);
           const res = await fetch("https://api.imgbb.com/1/upload?key=" + IMGBB_KEY, { method: "POST", body: fd });
           const json = await res.json();
+          if (!json.success) throw new Error("Falha no upload da imagem.");
           imgUrl = json.data.url;
         }
+
         await addDoc(collection(db, "posts"), {
           text: text,
           image: imgUrl,
           author: auth.currentUser.email,
-          authorPhoto: myProfile.photoURL,
+          authorPhoto: myProfile.photoURL || null,
+          likes: [],
           timestamp: serverTimestamp()
         });
+
         document.getElementById('post-text').value = '';
         document.getElementById('post-file').value = '';
+        document.getElementById('file-name').innerText = '';
       } catch (err) {
-        alert("Erro ao postar.");
+        alert("Erro ao publicar: " + err.message);
       } finally {
         btn.innerText = "Publicar";
         btn.disabled = false;
       }
-    };
+    });
+
+    // --- CARREGAR FEED (BUG PRINCIPAL CORRIGIDO) ---
+    function loadFeed() {
+      if (unsubFeed) unsubFeed();
+
+      const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+      unsubFeed = onSnapshot(q, (snap) => {
+        const container = document.getElementById('feed-container');
+        container.innerHTML = '';
+
+        snap.forEach(function(d) {
+          const p = d.data();
+          const authorName = (p.author || 'anon').split('@')[0];
+          const initial = authorName[0].toUpperCase();
+          const isLiked = p.likes && p.likes.includes(auth.currentUser.email);
+          const likeCount = p.likes ? p.likes.length : 0;
+
+          // Avatar — concatenação simples, sem template literal aninhada
+          let avatarHTML;
+          if (p.authorPhoto) {
+            avatarHTML = '<img src="' + p.authorPhoto + '" class="w-full h-full object-cover rounded-full">';
+          } else {
+            avatarHTML = '<span class="text-sm font-bold">' + initial + '</span>';
+          }
+
+          // Imagem do post
+          let imageHTML = '';
+          if (p.image) {
+            imageHTML = '<img src="' + p.image + '" class="w-full rounded-lg shadow-sm max-h-96 object-cover mb-3">';
+          }
+
+          // Botão curtir
+          const likeClass = isLiked ? 'text-[#1877f2]' : '';
+          const likeLabel = isLiked ? 'Curtiu' : 'Curtir';
+
+          const card = document.createElement('div');
+          card.className = 'card bg-white p-4 rounded-xl fb-shadow border border-gray-100';
+          card.innerHTML =
+            '<div class="flex items-center gap-3 mb-3">' +
+              '<div class="w-10 h-10 pfp-placeholder shrink-0">' + avatarHTML + '</div>' +
+              '<div class="font-bold text-sm text-gray-800">' + authorName + '</div>' +
+            '</div>' +
+            '<div class="text-gray-800 mb-3">' + (p.text || '') + '</div>' +
+            imageHTML +
+            '<div class="flex border-t pt-2 text-gray-500 font-bold text-sm">' +
+              '<button class="like-btn flex-1 py-2 rounded-lg hover:bg-gray-50 ' + likeClass + '" data-id="' + d.id + '" data-liked="' + isLiked + '">👍 ' + likeLabel + ' (' + likeCount + ')</button>' +
+              '<button class="flex-1 py-2 rounded-lg hover:bg-gray-50">💬 Comentar</button>' +
+            '</div>';
+
+          container.appendChild(card);
+        });
+
+        // Delegação de evento para curtir
+        container.querySelectorAll('.like-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            const postId = btn.getAttribute('data-id');
+            const liked = btn.getAttribute('data-liked') === 'true';
+            curtirPost(postId, liked);
+          });
+        });
+
+      }, function(err) {
+        console.error("Erro ao carregar feed:", err);
+      });
+    }
+
+    // --- CURTIR POST ---
+    async function curtirPost(id, isLiked) {
+      try {
+        const ref = doc(db, "posts", id);
+        await updateDoc(ref, {
+          likes: isLiked
+            ? arrayRemove(auth.currentUser.email)
+            : arrayUnion(auth.currentUser.email)
+        });
+      } catch (err) {
+        console.error("Erro ao curtir:", err);
+      }
+    }
   </script>
 </body>
 </html>
